@@ -4,3 +4,24 @@
     display: flex;
     flex-direction: column;
   }
+p,ul{
+    color: white;
+}
+.centro{
+  display: flex;
+  justify-content: center;
+  position: relative;
+  top: 9pc;
+}
+.centro2 img{
+  width: 23pc;
+}
+.centro2{
+  display: flex;
+  justify-content: center;
+  position: relative;
+  top: 4pc;
+}
+.centro img{
+  width: 23pc;
+}

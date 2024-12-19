@@ -1,43 +1,48 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { TextField, Button } from '@mui/material';
+import { TextField, Button, Snackbar, Alert, Box, Typography } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import img from './title.png';
+import { supabase } from '../../supabase/supabase'; 
+import title from './title.png'
+import { Link } from 'react-router-dom';
 import './Login.css';
 
-// Tema personalizado
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#ffffff', // Define branco como cor principal
+      main: '#000000',
+    },
+    background: {
+      default: '#f5f5f5',
     },
   },
   components: {
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
+          backgroundColor: '#e0e0e0',
           '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#ffffff', // Borda branca
+            borderColor: '#ffffff',
           },
           '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#ffffff', // Borda branca ao passar o mouse
+            borderColor: '#212121',
           },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#ffffff', // Borda branca ao focar
+            borderColor: '#212121',
           },
-          color: '#ffffff', // Texto digitado em branco
+          color: '#424242',
         },
         input: {
-          color: '#ffffff', // Texto digitado em branco
+          color: '#424242',
         },
       },
     },
     MuiInputLabel: {
       styleOverrides: {
         root: {
-          color: '#ffffff', // Cor do placeholder em branco
+          color: '#ffffff',
           '&.Mui-focused': {
-            color: '#ffffff', // Placeholder ao focar em branco
+            color: '#ffffff',
           },
         },
       },
@@ -46,23 +51,53 @@ const theme = createTheme({
 });
 
 function Login() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  
+  const { register, handleSubmit, formState: { errors } } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const handleLogin = async (data) => {
+    try {
+      const { data: userData, error } = await supabase
+        .from('usuarios')
+        .select('email, senha')
+        .eq('email', data.email)
+        .eq('senha', data.password)
+        .single();
+
+      if (error || !userData) {
+        setSnackbarMessage('Credenciais inválidas');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      } else {
+        setSnackbarMessage('Login bem-sucedido!');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+      }
+    } catch (err) {
+      console.error('Erro ao tentar login:', err);
+      setSnackbarMessage('Erro ao tentar login');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   return (
+    <>
+    <div className="centro">
+    <img src={title} alt="" srcset="" />
+    </div>
     <ThemeProvider theme={theme}>
-      <div className="home">
-        <div className="img">
-          <img src={img} alt="Título" />
-        </div>
-        <form className="form" onSubmit={handleSubmit(onSubmit)}>
+      <Box className="home" display="flex" flexDirection="column" alignItems="center">
+        <Typography variant="h4" style={{ marginBottom: '16px', color: '#000000' }}>
+          Login
+        </Typography>
+        <form className="form" onSubmit={handleSubmit(handleLogin)}>
           <TextField
             label="Email"
             variant="outlined"
@@ -87,13 +122,44 @@ function Login() {
             variant="contained"
             color="primary"
             fullWidth
-            style={{ marginTop: '16px' }}
+            style={{
+              marginTop: '16px',
+              backgroundColor: '#000000',
+              color: '#ffffff',
+            }}
           >
             Entrar
           </Button>
+<Link to='/cadastro'>
+          <Button
+            type=""
+            variant="contained"
+            color="primary"
+            fullWidth
+            style={{
+              marginTop: '16px',
+              backgroundColor: '#000000',
+              color: '#ffffff',
+            }}
+          >
+            Não Tenho Uma Conta!
+          </Button>
+          </Link>
+        
         </form>
-      </div>
+
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={3000}
+          onClose={handleCloseSnackbar}
+        >
+          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+      </Box>
     </ThemeProvider>
+    </>
   );
 }
 
