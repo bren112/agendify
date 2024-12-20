@@ -4,6 +4,7 @@ import Navbar from "./components/navbar";
 import Home from "./pages/Home/Index";
 import Login from "./pages/Login/Index";
 import Cadastro from "./pages/Cadastro/Index";
+import Agendar from "./pages/Agendar/Index";
 function App() {
   return (
     <BrowserRouter>
@@ -14,6 +15,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
+          <Route path="/agendar" element={<Agendar />} />
       
         </Routes>
       </div>

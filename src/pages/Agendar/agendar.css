@@ -1,0 +1,40 @@
+.agendar{
+    background-color: rgb(0, 0, 0);
+    height: 9pc;
+    position: relative;
+    top: 4pc;
+    display: flex;
+    justify-content: space-around;
+    flex-direction: row;
+    align-items: center;
+    
+}
+.agendar button{
+    width: 4pc;
+    height: 2pc;
+    border-radius: 2pc;
+    background-color: red;
+    border: none;
+    color: white;
+}
+
+.user h1{
+    color: black;
+    font-size: 0.9pc;
+}
+.user{
+    background-color: rgb(255, 255, 255);
+    display: flex;
+    margin: 1pc;
+    border-radius: 5pc;
+    width: 13pc;
+    flex-direction: row;
+    align-items: center;
+    height: 4pc;
+    gap: 1pc;
+}
+.user img{
+    margin-left: 1pc;
+    width: 3pc;
+
+}

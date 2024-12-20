@@ -5,6 +5,8 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { supabase } from '../../supabase/supabase'; 
 import title from './title.png'
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Substitua useHistory por useNavigate
+
 import './Login.css';
 
 const theme = createTheme({
@@ -51,6 +53,7 @@ const theme = createTheme({
 });
 
 function Login() {
+  const navigate = useNavigate(); // Substituto para redirecionamento
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
@@ -61,7 +64,7 @@ function Login() {
     try {
       const { data: userData, error } = await supabase
         .from('usuarios')
-        .select('email, senha')
+        .select('id, email, senha')  // Inclua o 'id' na consulta
         .eq('email', data.email)
         .eq('senha', data.password)
         .single();
@@ -71,7 +74,11 @@ function Login() {
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       } else {
+        // Salve o ID do usuário no localStorage após um login bem-sucedido
+        localStorage.setItem('userId', userData.id);
+
         setSnackbarMessage('Login bem-sucedido!');
+        navigate('/agendar')
         setSnackbarSeverity('success');
         setSnackbarOpen(true);
       }
@@ -80,6 +87,7 @@ function Login() {
       setSnackbarMessage('Erro ao tentar login');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
+     
     }
   };
 
@@ -89,76 +97,74 @@ function Login() {
 
   return (
     <>
-    <div className="centro">
-    <img src={title} alt="" srcset="" />
-    </div>
-    <ThemeProvider theme={theme}>
-      <Box className="home" display="flex" flexDirection="column" alignItems="center">
-        <Typography variant="h4" style={{ marginBottom: '16px', color: '#000000' }}>
-          Login
-        </Typography>
-        <form className="form" onSubmit={handleSubmit(handleLogin)}>
-          <TextField
-            label="Email"
-            variant="outlined"
-            fullWidth
-            {...register('email', { required: 'O email é obrigatório.' })}
-            error={!!errors.email}
-            helperText={errors.email?.message}
-            margin="normal"
-          />
-          <TextField
-            label="Senha"
-            type="password"
-            variant="outlined"
-            fullWidth
-            {...register('password', { required: 'A senha é obrigatória.' })}
-            error={!!errors.password}
-            helperText={errors.password?.message}
-            margin="normal"
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            style={{
-              marginTop: '16px',
-              backgroundColor: '#000000',
-              color: '#ffffff',
-            }}
-          >
-            Entrar
-          </Button>
-<Link to='/cadastro'>
-          <Button
-            type=""
-            variant="contained"
-            color="primary"
-            fullWidth
-            style={{
-              marginTop: '16px',
-              backgroundColor: '#000000',
-              color: '#ffffff',
-            }}
-          >
-            Não Tenho Uma Conta!
-          </Button>
-          </Link>
-        
-        </form>
+      <div className="centro">
+        <img src={title} alt="" />
+      </div>
+      <ThemeProvider theme={theme}>
+        <Box className="home" display="flex" flexDirection="column" alignItems="center">
+          <Typography variant="h4" style={{ marginBottom: '16px', color: '#000000' }}>
+            Login
+          </Typography>
+          <form className="form" onSubmit={handleSubmit(handleLogin)}>
+            <TextField
+              label="Email"
+              variant="outlined"
+              fullWidth
+              {...register('email', { required: 'O email é obrigatório.' })}
+              error={!!errors.email}
+              helperText={errors.email?.message}
+              margin="normal"
+            />
+            <TextField
+              label="Senha"
+              type="password"
+              variant="outlined"
+              fullWidth
+              {...register('password', { required: 'A senha é obrigatória.' })}
+              error={!!errors.password}
+              helperText={errors.password?.message}
+              margin="normal"
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              style={{
+                marginTop: '16px',
+                backgroundColor: '#000000',
+                color: '#ffffff',
+              }}
+            >
+              Entrar
+            </Button>
+            <Link to='/cadastro'>
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                style={{
+                  marginTop: '16px',
+                  backgroundColor: '#000000',
+                  color: '#ffffff',
+                }}
+              >
+                Não Tenho Uma Conta!
+              </Button>
+            </Link>
+          </form>
 
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={3000}
-          onClose={handleCloseSnackbar}
-        >
-          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
-      </Box>
-    </ThemeProvider>
+          <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={3000}
+            onClose={handleCloseSnackbar}
+          >
+            <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
+        </Box>
+      </ThemeProvider>
     </>
   );
 }
