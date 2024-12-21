@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../supabase/supabase'; // Certifique-se de importar sua instância do Supabase
+import { supabase } from '../../supabase/supabase'; 
 import { useNavigate } from 'react-router-dom';
 import './agendar.css';
 import img from './img.png';
@@ -8,76 +8,82 @@ import corpo from './corpo.png';
 function Agendar() {
   const [userName, setUserName] = useState('');
   const [loading, setLoading] = useState(true);
-  const [isApproved, setIsApproved] = useState(false); // Se o usuário está aprovado
-  const [queueStatus, setQueueStatus] = useState(null); // Status da fila (pendente ou aprovado)
-  const [approvedList, setApprovedList] = useState([]); // Lista de aprovados
-  const [showModal, setShowModal] = useState(false); // Controle do modal
-  const [searchQuery, setSearchQuery] = useState(''); // Estado para o campo de busca
+  const [isApproved, setIsApproved] = useState(false); 
+  const [queueStatus, setQueueStatus] = useState(null); 
+  const [approvedList, setApprovedList] = useState([]); 
+  const [showModal, setShowModal] = useState(false); 
+  const [searchQuery, setSearchQuery] = useState(''); 
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const fetchData = async () => {
     const userId = localStorage.getItem('userId');
 
     if (userId) {
-      const fetchUserData = async () => {
-        try {
-          // Buscar nome do usuário
-          const { data: userData, error: userError } = await supabase
-            .from('usuarios')
-            .select('nome')
-            .eq('id', userId)
-            .single();
+      try {
+        // Buscar nome do usuário
+        const { data: userData, error: userError } = await supabase
+          .from('usuarios')
+          .select('nome')
+          .eq('id', userId)
+          .single();
 
-          if (userError) throw userError;
-          setUserName(userData.nome);
+        if (userError) throw userError;
+        setUserName(userData.nome);
 
-          // Verificar se o usuário está na fila de aprovados
-          const { data: approvedData, error: approvedError } = await supabase
-            .from('fila_aprovados')
-            .select('id')
-            .eq('fk_user_id', userId)
-            .single();
+        // Verificar se o usuário está na fila de aprovados
+        const { data: approvedData, error: approvedError } = await supabase
+          .from('fila_aprovados')
+          .select('id')
+          .eq('fk_user_id', userId)
+          .single();
 
-          if (approvedError && approvedError.code !== 'PGRST116') throw approvedError;
-          setIsApproved(!!approvedData);
+        if (approvedError && approvedError.code !== 'PGRST116') throw approvedError;
+        setIsApproved(!!approvedData);
 
-          // Buscar a lista de todos os aprovados com os dados dos usuários
-          const { data: approvedListData, error: approvedListError } = await supabase
-            .from('fila_aprovados')
-            .select('posicao, fk_user_id')
-            .order('posicao', { ascending: true });
+        // Buscar a lista de todos os aprovados com os dados dos usuários
+        const { data: approvedListData, error: approvedListError } = await supabase
+          .from('fila_aprovados')
+          .select('posicao, fk_user_id')
+          .order('posicao', { ascending: true });
 
-          if (approvedListError) throw approvedListError;
+        if (approvedListError) throw approvedListError;
 
-          // Obter os dados de cada usuário na lista de aprovados e adicionar um número sequencial
-          const usersWithNames = await Promise.all(
-            approvedListData.map(async (item, index) => {
-              const { data: userData, error: userError } = await supabase
-                .from('usuarios')
-                .select('nome')
-                .eq('id', item.fk_user_id)
-                .single();
-              if (userError) throw userError;
-              return {
-                posicao: index + 1, // Atribui um número sequencial (1, 2, 3, ...)
-                nome: userData.nome,
-              };
-            })
-          );
+        // Obter os dados de cada usuário na lista de aprovados e adicionar um número sequencial
+        const usersWithNames = await Promise.all(
+          approvedListData.map(async (item, index) => {
+            const { data: userData, error: userError } = await supabase
+              .from('usuarios')
+              .select('nome')
+              .eq('id', item.fk_user_id)
+              .single();
+            if (userError) throw userError;
+            return {
+              posicao: index + 1, 
+              nome: userData.nome,
+            };
+          })
+        );
 
-          setApprovedList(usersWithNames);
+        setApprovedList(usersWithNames);
 
-        } catch (err) {
-          console.error('Erro ao acessar o banco de dados:', err);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchUserData();
+      } catch (err) {
+        console.error('Erro ao acessar o banco de dados:', err);
+      } finally {
+        setLoading(false);
+      }
     } else {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchData();
+
+    // Atualizar os dados a cada 15 segundos
+    const intervalId = setInterval(fetchData, 15000);
+
+    // Limpar o intervalo quando o componente for desmontado
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleEnterQueue = async () => {
@@ -86,23 +92,19 @@ function Agendar() {
 
     try {
       if (queueStatus === null) {
-        // Inserir o usuário na fila pendente
         const { error } = await supabase
           .from('fila_pendente')
-          .insert([{ fk_user_id: userId, status: false }]); // Inserir na fila pendente
+          .insert([{ fk_user_id: userId, status: false }]);
 
         if (error) throw error;
-
         setQueueStatus(false);
       } else if (queueStatus === false) {
-        // Remover o usuário da fila pendente
         const { error } = await supabase
           .from('fila_pendente')
           .delete()
           .eq('fk_user_id', userId);
 
         if (error) throw error;
-
         setQueueStatus(null);
       }
     } catch (err) {
@@ -136,11 +138,15 @@ function Agendar() {
   return (
     <div className="pai">
       <div className="agendar">
-        <div className="user">
-          <img src={img} alt="Usuário" />
-          <h1>Olá, {userName || 'Usuário'}</h1>
+        <div className="esq">
+          <div className="user">
+            <img src={img} alt="Usuário" />
+            <h1>Olá, {userName || 'Usuário'}</h1>
+          </div>
+          <button onClick={fetchData} className="refresh-button">
+            Atualize
+          </button>
         </div>
-
         <button onClick={handleLogout} className="logout-button">
           Sair
         </button>
@@ -150,17 +156,17 @@ function Agendar() {
           <div className="sobre">
             <h1 id="titulo">CORTE COM O MELHOR 💈</h1>
             <img src={corpo} alt="" />
-            <br/>
+            <br />
 
             <p className="approved-message">Você está na Fila!</p>
 
-            <br/>
-            <button onClick={toggleModal} id='mbtn' className="view-queue-button">
+            <br />
+            <button onClick={toggleModal} id="mbtn" className="view-queue-button">
               Ver Meu Lugar
             </button>
-            <br/>
-            <br/>
-            <br/>
+            <br />
+            <br />
+            <br />
           </div>
         ) : queueStatus === null ? (
           <button onClick={handleEnterQueue} className="enter-button">
@@ -192,7 +198,7 @@ function Agendar() {
             {filteredList.length === 0 ? (
               <p>Nenhum usuário aprovado.</p>
             ) : (
-              <table id='tabela_user' className="approved-table">
+              <table id="tabela_user" className="approved-table">
                 <thead>
                   <tr>
                     <th>Posição</th>
@@ -201,7 +207,7 @@ function Agendar() {
                 </thead>
                 <tbody>
                   {filteredList.map((user, index) => (
-                    <tr id='mytr' key={index}>
+                    <tr id="mytr" key={index}>
                       <td>{user.posicao}</td>
                       <td>{user.nome}</td>
                     </tr>
