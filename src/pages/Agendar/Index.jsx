@@ -198,7 +198,7 @@ function Agendar() {
         <div className="modal-overlay" onClick={closeModalIfClickedOutside}>
           <div className="modal-content">
             <h2>Fila de Aprovados</h2>
-            <button onClick={toggleModal} className="close-button">X</button>
+            <button onClick={toggleModal} className="close-button"></button>
             <input
               type="text"
               placeholder="Busque seu Nome!"
