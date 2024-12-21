@@ -183,3 +183,37 @@
     flex-direction: column;
     gap: 0.5pc;
   }
+  #meup{
+    text-align: center;
+    color: #dcd5d5;
+  }
+  #setas {
+    width: 9pc;
+    animation: pulsar 2s infinite; /* A animação será repetida infinitamente */
+  }
+  
+  @keyframes pulsar {
+    0% {
+      transform: scale(1); /* Tamanho original */
+    }
+    50% {
+      transform: scale(1.2); /* Aumenta o tamanho para 120% */
+    }
+    100% {
+      transform: scale(1); /* Retorna ao tamanho original */
+    }
+  }
+  
+  .imagem_setas{
+    display: flex;
+    justify-content: center;
+  }
+  .enter-button{
+    background-color: black;
+    color: white;
+    border: solid 1px white;
+    border-radius: 3pc;
+    width: 15pc;
+    height: 3pc;
+    font-size: 1pc;
+  }

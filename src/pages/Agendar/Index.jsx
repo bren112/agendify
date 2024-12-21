@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './agendar.css';
 import img from './img.png';
 import corpo from './corpo.png';
-
+import setas from './setas.png'
 function Agendar() {
   const [userName, setUserName] = useState('');
   const [loading, setLoading] = useState(true);
@@ -179,12 +179,28 @@ function Agendar() {
             <br />
             <br />
           </div>
+
         ) : queueStatus === null ? (
+          <div className="solicitar">
+            <h1 id='titulo'>CORTE COM O MELHOR 💈</h1>
+            <p id='meup'>clique aqui para poder entrar na fila</p>
+            <br/>
+            <br/>
+            <div className="imagem_setas">
+            <img id='setas' src={setas} alt="" srcset="" />
+            </div>
+            <br/>
+            <br/>
+            <div className="imagem_setas">
           <button onClick={handleEnterQueue} className="enter-button">
-            Entrar na Fila
-          </button>
+            Entrar na Fila!
+          </button>     
+          </div>   
+          </div>
         ) : (
+       
           <button
+
             onClick={handleEnterQueue}
             className={`queue-button ${queueStatus ? 'queue-true' : 'queue-false'}`}
           >
