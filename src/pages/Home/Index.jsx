@@ -13,7 +13,9 @@ function Home(){
                     <Link to='/login'>
                     <button id='login'>Login</button>
                     </Link>
-                    <button id='agendar'>Meu Horário</button>
+                    <Link to='/agendar'>
+                    <button id='agendar'>Agenda</button>
+                    </Link>
                 </div>
         </div>
         </>

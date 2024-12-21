@@ -15,11 +15,12 @@
     padding: 10px;
     text-align: left;
     color: white;
+  
 
   }
   
   .queue-table th {
-    background-color: #f4f4f4;
+    background-color: #111ac5;
   }
   
   .approve-button {
@@ -46,4 +47,55 @@
   .disapprove-button:hover {
     background-color: #e31b0c;
   }
+  #meuLink{
+    background-color: rgb(0, 0, 0);
+    color: white;
+    border-radius: 2pc;
+
+    width: 13pc;
+    height: 2pc;
+    border: solid 0.2px white;
+  }
+  .login-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    width: 300px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
   
+  .login-container input {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .login-container button {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .login-container button:hover {
+    background-color: #0056b3;
+  }
+  .botoes{
+    display: flex;
+    gap: 1pc;
+  }

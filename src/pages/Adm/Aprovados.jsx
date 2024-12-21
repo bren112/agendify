@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabase/supabase';
 import './aprovados.css'; // Arquivo CSS opcional para estilos
+import { Link } from 'react-router-dom';
 
 function Aprovados() {
   const [approvedQueue, setApprovedQueue] = useState([]); // Lista de usuários aprovados
@@ -76,7 +77,13 @@ function Aprovados() {
 
   return (
     <div className="aprovados">
-      <h1>Lista de Aprovados</h1>
+    
+    <Link to='/adm'>
+    <button id='meuLink'>Voltar</button>
+  </Link>
+  <br/> <br/>
+  <br/>
+      <h1 id='titulo'>Clientes de Hoje! 💈</h1>
       {approvedQueue.length === 0 ? (
         <p>Nenhum usuário aprovado.</p>
       ) : (

@@ -77,6 +77,12 @@ function Agendar() {
   };
 
   useEffect(() => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      navigate('/login'); // Redireciona para a página de login se não estiver logado
+      return;
+    }
+  
     fetchData();
 
     // Atualizar os dados a cada 15 segundos
