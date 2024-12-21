@@ -5,6 +5,8 @@ import Home from "./pages/Home/Index";
 import Login from "./pages/Login/Index";
 import Cadastro from "./pages/Cadastro/Index";
 import Agendar from "./pages/Agendar/Index";
+import Adm from "./pages/Adm/Index";
+import Aprovados from "./pages/Adm/Aprovados";
 function App() {
   return (
     <BrowserRouter>
@@ -16,6 +18,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/agendar" element={<Agendar />} />
+          <Route path="/adm" element={<Adm />} />
+          <Route path="/aprovados" element={<Aprovados />} />
       
         </Routes>
       </div>

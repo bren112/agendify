@@ -25,6 +25,7 @@ function Navbar() {
         <li className="nav__item"><Link to="/" className="nav__link">Home</Link></li>
         <li className="nav__item"><Link to="/login" className="nav__link">Login</Link></li>
         <li className="nav__item"><Link to="/agendar" className="nav__link">Agendar</Link></li>
+        <li className="nav__item"><Link to="/adm" className="nav__link">Adm</Link></li>
        
     </ul>
     <div onClick={navToggle} className={toggleIcon}>
