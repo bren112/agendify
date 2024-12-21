@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabase/supabase';
 import './adm.css'; // Certifique-se de criar um arquivo de estilo, se necessário
 import { Link } from 'react-router-dom';
+
 function Adm() {
   const [pendingQueue, setPendingQueue] = useState([]); // Lista de usuários na fila pendente
   const [loading, setLoading] = useState(true);
@@ -30,10 +31,22 @@ function Adm() {
 
   const handleApprove = async (userId, queueId) => {
     try {
-      // Adicionar usuário na tabela fila_aprovados
+      // Buscar a última posição na tabela fila_aprovados
+      const { data: approvedData, error: fetchError } = await supabase
+        .from('fila_aprovados')
+        .select('posicao')
+        .order('posicao', { ascending: false }) // Ordenar por posição de forma decrescente
+        .limit(1); // Pegamos o primeiro registro (o maior)
+
+      if (fetchError) throw fetchError;
+
+      // Se não houver registros, a posição será 1, caso contrário, +1 da maior posição
+      const nextPosition = approvedData.length === 0 ? 1 : approvedData[0].posicao + 1;
+
+      // Adicionar o usuário na tabela fila_aprovados com a posição calculada
       const { error: insertError } = await supabase
         .from('fila_aprovados')
-        .insert([{ fk_user_id: userId }]);
+        .insert([{ fk_user_id: userId, posicao: nextPosition }]);
 
       if (insertError) throw insertError;
 
@@ -79,9 +92,9 @@ function Adm() {
 
   return (
     <div className="adm">
-        <Link to='/aprovados'>
+      <Link to='/aprovados'>
         <button>Aprovados</button>
-        </Link>
+      </Link>
       <h1>Administração - Fila Pendente</h1>
       {pendingQueue.length === 0 ? (
         <p>Nenhum usuário na fila pendente.</p>

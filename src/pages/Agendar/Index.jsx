@@ -3,13 +3,16 @@ import { supabase } from '../../supabase/supabase'; // Certifique-se de importar
 import { useNavigate } from 'react-router-dom';
 import './agendar.css';
 import img from './img.png';
-import corpo from './corpo.png'
+import corpo from './corpo.png';
+
 function Agendar() {
   const [userName, setUserName] = useState('');
   const [loading, setLoading] = useState(true);
-  const [queueStatus, setQueueStatus] = useState(null); // Estado do status da fila pendente
-  const [isApproved, setIsApproved] = useState(false); // Estado para verificar se está aprovado
-  const [queuePosition, setQueuePosition] = useState(null); // Posição do usuário na fila
+  const [isApproved, setIsApproved] = useState(false); // Se o usuário está aprovado
+  const [queueStatus, setQueueStatus] = useState(null); // Status da fila (pendente ou aprovado)
+  const [approvedList, setApprovedList] = useState([]); // Lista de aprovados
+  const [showModal, setShowModal] = useState(false); // Controle do modal
+  const [searchQuery, setSearchQuery] = useState(''); // Estado para o campo de busca
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,7 +29,6 @@ function Agendar() {
             .single();
 
           if (userError) throw userError;
-
           setUserName(userData.nome);
 
           // Verificar se o usuário está na fila de aprovados
@@ -39,30 +41,32 @@ function Agendar() {
           if (approvedError && approvedError.code !== 'PGRST116') throw approvedError;
           setIsApproved(!!approvedData);
 
-          // Buscar status da fila pendente e posição na fila
-          if (!approvedData) {
-            const { data: queueData, error: queueError } = await supabase
-              .from('fila_pendente')
-              .select('id, status, created_at')
-              .eq('fk_user_id', userId)
-              .single();
+          // Buscar a lista de todos os aprovados com os dados dos usuários
+          const { data: approvedListData, error: approvedListError } = await supabase
+            .from('fila_aprovados')
+            .select('posicao, fk_user_id')
+            .order('posicao', { ascending: true });
 
-            if (queueError && queueError.code !== 'PGRST116') throw queueError;
+          if (approvedListError) throw approvedListError;
 
-            setQueueStatus(queueData?.status ?? null);
+          // Obter os dados de cada usuário na lista de aprovados e adicionar um número sequencial
+          const usersWithNames = await Promise.all(
+            approvedListData.map(async (item, index) => {
+              const { data: userData, error: userError } = await supabase
+                .from('usuarios')
+                .select('nome')
+                .eq('id', item.fk_user_id)
+                .single();
+              if (userError) throw userError;
+              return {
+                posicao: index + 1, // Atribui um número sequencial (1, 2, 3, ...)
+                nome: userData.nome,
+              };
+            })
+          );
 
-            if (queueData) {
-              // Contar quantas pessoas estão na fila antes do usuário
-              const { data: queueCount, error: countError } = await supabase
-                .from('fila_pendente')
-                .select('id', { count: 'exact' })
-                .lt('created_at', queueData.created_at); // Pessoas antes na fila
+          setApprovedList(usersWithNames);
 
-              if (countError) throw countError;
-
-              setQueuePosition(queueCount?.length || 0);
-            }
-          }
         } catch (err) {
           console.error('Erro ao acessar o banco de dados:', err);
         } finally {
@@ -82,14 +86,16 @@ function Agendar() {
 
     try {
       if (queueStatus === null) {
+        // Inserir o usuário na fila pendente
         const { error } = await supabase
           .from('fila_pendente')
-          .insert([{ fk_user_id: userId, status: false }]);
+          .insert([{ fk_user_id: userId, status: false }]); // Inserir na fila pendente
 
         if (error) throw error;
 
         setQueueStatus(false);
       } else if (queueStatus === false) {
+        // Remover o usuário da fila pendente
         const { error } = await supabase
           .from('fila_pendente')
           .delete()
@@ -98,7 +104,6 @@ function Agendar() {
         if (error) throw error;
 
         setQueueStatus(null);
-        setQueuePosition(null);
       }
     } catch (err) {
       console.error('Erro ao atualizar a fila:', err);
@@ -109,6 +114,20 @@ function Agendar() {
     localStorage.removeItem('userId');
     navigate('/login');
   };
+
+  const toggleModal = () => {
+    setShowModal(!showModal);
+  };
+
+  const closeModalIfClickedOutside = (e) => {
+    if (e.target.classList.contains('modal-overlay')) {
+      setShowModal(false);
+    }
+  };
+
+  const filteredList = approvedList.filter(user =>
+    user.nome.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (loading) {
     return <p>Carregando...</p>;
@@ -127,20 +146,21 @@ function Agendar() {
         </button>
       </div>
       <div className="corpo">
-      
         {isApproved ? (
-          <div className='sobre'>
-            <h1 id='titulo'>CORTE COM O MELHOR 💈</h1>
+          <div className="sobre">
+            <h1 id="titulo">CORTE COM O MELHOR 💈</h1>
+            <img src={corpo} alt="" />
             <br/>
-            <img src={corpo} alt="" srcset="" />
-            <br/>
-            <br/>
+
             <p className="approved-message">Você está na Fila!</p>
-            {queuePosition > 0 ? (
-              <p className="queue-info">{queuePosition} pessoas estão na sua frente.</p>
-            ) : (
-              <p className="queue-info">Você é o Próximo!</p>
-            )}
+
+            <br/>
+            <button onClick={toggleModal} id='mbtn' className="view-queue-button">
+              Ver Meu Lugar
+            </button>
+            <br/>
+            <br/>
+            <br/>
           </div>
         ) : queueStatus === null ? (
           <button onClick={handleEnterQueue} className="enter-button">
@@ -155,6 +175,43 @@ function Agendar() {
           </button>
         )}
       </div>
+
+      {/* Modal para exibir a lista de aprovados */}
+      {showModal && (
+        <div className="modal-overlay" onClick={closeModalIfClickedOutside}>
+          <div className="modal-content">
+            <h2>Fila de Aprovados</h2>
+            <button onClick={toggleModal} className="close-button">X</button>
+            <input
+              type="text"
+              placeholder="Busque seu Nome!"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+            {filteredList.length === 0 ? (
+              <p>Nenhum usuário aprovado.</p>
+            ) : (
+              <table id='tabela_user' className="approved-table">
+                <thead>
+                  <tr>
+                    <th>Posição</th>
+                    <th>Nome</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredList.map((user, index) => (
+                    <tr id='mytr' key={index}>
+                      <td>{user.posicao}</td>
+                      <td>{user.nome}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
